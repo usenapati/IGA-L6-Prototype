@@ -5,6 +5,7 @@ public class TopDownController : MonoBehaviour
     [Header("Player Attributes:")]
     [SerializeField] private float baseWalkSpeed = 1.0f;
     [SerializeField] private float crossHairDistance = 1.0f;
+    [SerializeField] private float spawnProjectileDistance = 0.6f;
     [SerializeField] private float baseAimSpeedPenalty = 1.0f;
     
     [Header("Player Stats:")] 
@@ -14,6 +15,7 @@ public class TopDownController : MonoBehaviour
     [SerializeField] private bool isWalking;
     [SerializeField] private bool endOfAiming;
     [SerializeField] private bool isAiming;
+    [SerializeField] private bool hasFired;
 
     public Vector2 ShootingDirection { get; private set; }
 
@@ -22,6 +24,7 @@ public class TopDownController : MonoBehaviour
     [SerializeField] private SpriteRenderer spriteRenderer;
     [SerializeField] private Animator animator;
     [SerializeField] private GameObject crosshair;
+    [SerializeField] private GameObject projectileSpawn;
 
     [Header("Prefabs:")] 
     [SerializeField] private GameObject projectilePrefab;
@@ -33,10 +36,6 @@ public class TopDownController : MonoBehaviour
     private static readonly int Speed = Animator.StringToHash("Speed");
     
     // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
 
     // Update is called once per frame
     void FixedUpdate()
@@ -66,6 +65,7 @@ public class TopDownController : MonoBehaviour
         if (isAiming)
         {
             movementSpeed *= baseAimSpeedPenalty;
+            hasFired = false;
         }
         
         
@@ -97,9 +97,11 @@ public class TopDownController : MonoBehaviour
 
     void Aim()
     {
+        // TODO Split between mouse or standard aiming
         if (direction != Vector2.zero)
         {
             crosshair.transform.localPosition = direction * crossHairDistance;
+            projectileSpawn.transform.localPosition = (direction * spawnProjectileDistance);
         }
     }
 
@@ -109,9 +111,19 @@ public class TopDownController : MonoBehaviour
         ShootingDirection = crosshair.transform.localPosition;
         ShootingDirection.Normalize();
 
-        if (endOfAiming)
+        if (endOfAiming && !hasFired)
         {
-            Instantiate(projectilePrefab, transform.position, Quaternion.identity, gameObject.transform);
+            Instantiate(projectilePrefab, projectileSpawn.transform.position, Quaternion.identity, transform);
+            hasFired = true;
         }
+    }
+
+    void Melee()
+    {
+        /*
+         * If you are not shooting
+         *      Spawn a ray cast in front of the player and check if enemy is hit.
+         *      If so, kill the enemy (in the future subtract hp)
+         */
     }
 }
